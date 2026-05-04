@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int            @id @default(autoincrement())
+  name           String
+  email          String         @unique
+  password_hash  String
+  created_at     DateTime       @default(now())
+
+  dailySummaries DailySummary[]
+  meals          Meal[]
+  expenses       Expense[]
+  goals          Goal?
+  passwordResetTokens PasswordResetToken[]
+}
+
+model DailySummary {
+  id               Int      @id @default(autoincrement())
+  user_id          Int
+  date             DateTime
+  steps            Int      @default(0)
+  exercise_minutes Int      @default(0)
+  sleep_hours      Decimal? @db.Decimal(3, 1)
+  mood_score       Int?
+  created_at       DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, date])
+}
+
+model Meal {
+  id          Int      @id @default(autoincrement())
+  user_id     Int
+  date        DateTime
+  meal_type   String
+  description String
+  calories    Int      @default(0)
+  protein     Decimal? @db.Decimal(6, 2)
+  carbs       Decimal? @db.Decimal(6, 2)
+  fat         Decimal? @db.Decimal(6, 2)
+  tags        String?
+  created_at  DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Expense {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  date       DateTime
+  title      String
+  amount     Decimal  @db.Decimal(10, 2)
+  category   String
+  note       String?
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Goal {
+  id             Int      @id @default(autoincrement())
+  user_id        Int      @unique
+  step_goal      Int      @default(10000)
+  sleep_goal     Decimal  @db.Decimal(3, 1) @default(8.0)
+  exercise_goal  Int      @default(60)
+  spending_limit Decimal  @db.Decimal(10, 2) @default(500.00)
+  protein_goal   Decimal  @db.Decimal(6, 2) @default(100.00)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Food {
+  id         Int      @id @default(autoincrement())
+  name       String
+  category   String
+  calories   Int
+  protein    Decimal  @db.Decimal(6, 2)
+  carbs      Decimal  @db.Decimal(6, 2)
+  fat        Decimal  @db.Decimal(6, 2)
+  created_at DateTime @default(now())
+}
+model PasswordResetToken {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  token_hash String   @unique
+  expires_at DateTime
+  used_at    DateTime?
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
