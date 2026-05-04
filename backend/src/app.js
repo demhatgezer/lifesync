@@ -14,7 +14,22 @@ const foodsRoutes = require("./routes/foods.routes");
 
 const app = express();
 
-app.use(cors());
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.CLIENT_URL,
+  "https://lifesync-o7ptqjlz5-demhatgezers-projects.vercel.app",
+  "https://lifesync-vert.vercel.app"
+];
+
+app.use(cors({
+  origin: allowedOrigins,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
+}));
+
+app.options("*", cors());
+
 app.use(express.json());
 
 app.use("/auth", authRoutes);
